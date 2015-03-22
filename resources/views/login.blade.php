@@ -37,8 +37,9 @@
 
     <div class="container">
         <div class="container">
+        <div class="row"><br/><br/><br/><br/><br/><br/></div>
     <div class="row">
-		<div class="col-md-4 col-md-offset-4">
+		<div class="col-md-6 col-md-offset-3">
     		<div class="panel panel-default">
 			  	<div class="panel-heading">
 			    	<h3 class="panel-title">Please sign in</h3>
