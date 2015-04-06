@@ -18,9 +18,14 @@
     <!-- Custom styles for this template -->
     <link href="{{ asset('css/jumbotron-narrow.css') }}" rel="stylesheet">
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/bootstrap-datepicker.min.css') }}" rel="stylesheet">
+
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
     <script src="../../assets/js/ie-emulation-modes-warning.js"></script>
+    <script src="{{ asset('js/jquery-1.11.2.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap-datepicker.min.js') }}"></script>
+
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -69,16 +74,20 @@
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#">Welcome, Customer!</a></li>
+        <li><a href="{{route('logout')}}">Welcome, {{{Session::get('user.name')}}}!</a></li>
       </ul>
     </div>
   </div>
 </nav>
+<?php if (Session::has('message')) { ?>
+<div class="alert alert-info" role="alert">{{Session::get('message')}}</div>
+<?php } ?>
+
       @yield('content')
     
 
       <footer class="footer">
-        <p>&copy; Company 2014</p>
+        <p>&copy; TripPlanner 2015</p>
       </footer>
 
     </div> <!-- /container -->

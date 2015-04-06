@@ -27,6 +27,10 @@ return [
 	*/
 
 	'default' => 'mysql',
+	'host'      => 'localhost',
+	'database'  => 'tripplanner',
+	'username'  => 'root',
+	'password'  => '',
 
 	/*
 	|--------------------------------------------------------------------------

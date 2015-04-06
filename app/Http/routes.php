@@ -14,34 +14,41 @@
 
 Route::get('login', array('as' => 'login', 'uses' => 'LoginController@index'));
 Route::post('login/post', array('as' => 'login.post', 'uses' => 'LoginController@post'));
+Route::get('logout', array('as' => 'logout', 'uses' => 'LoginController@logout'));
+
+Route::group(['middleware' => 'authconsumer'], function()
+{
 
 Route::get('/', array('as' => 'index', 'uses' => 'CustomerController@index'));
 
 //Flights
 Route::get('flights', array('as' => 'flight.search', 'uses' => 'CustomerController@flightsearch'));
 Route::post('flights/search', array('as' => 'flight.search.post', 'uses' => 'CustomerController@flightsearchresults'));
-Route::get('flights/book', array('as' => 'flight.book', 'uses' => 'CustomerController@flightbook'));
+Route::get('flights/book/{id}', array('as' => 'flight.book', 'uses' => 'CustomerController@flightbook'));
 
 //Hotels
 Route::get('hotels', array('as' => 'hotel.search', 'uses' => 'CustomerController@hotelsearch'));
 Route::post('hotels/search', array('as' => 'hotel.search.post', 'uses' => 'CustomerController@hotelsearchresults'));
-Route::get('hotels/book', array('as' => 'hotel.book', 'uses' => 'CustomerController@hotelbook'));
+Route::get('hotels/book/{id}', array('as' => 'hotel.book', 'uses' => 'CustomerController@hotelbook'));
 
 //Travel Packages
 Route::get('packages', array('as' => 'package.browse', 'uses' => 'CustomerController@packages'));
-Route::get('packages/book', array('as' => 'package.book', 'uses' => 'CustomerController@packagebook'));
+Route::get('packages/book/{id}', array('as' => 'package.book', 'uses' => 'CustomerController@packagebook'));
 
 //Order History
 Route::get('orders', array('as' => 'order.history', 'uses' => 'CustomerController@orderhistory'));
 
 //Reviews
-Route::get('hotel/review', array('as' => 'hotel.review', 'uses' => 'CustomerController@reviewhotel'));
+Route::get('hotel/review/{id}', array('as' => 'hotel.review', 'uses' => 'CustomerController@reviewhotel'));
 Route::post('hotel/review/post', array('as' => 'hotel.review.post', 'uses' => 'CustomerController@reviewhotelpost'));
 
-Route::get('flight/review', array('as' => 'flight.review', 'uses' => 'CustomerController@reviewflight'));
+Route::get('flight/review/{id}', array('as' => 'flight.review', 'uses' => 'CustomerController@reviewflight'));
 Route::post('flight/review/post', array('as' => 'flight.review.post', 'uses' => 'CustomerController@reviewflightpost'));
 
+});
 
+Route::group(['middleware' => 'authprovider'], function()
+{
 
 #####################Providers#################################
 Route::get('/provider', array('as' => 'provider.index', 'uses' => 'ProviderController@index'));
@@ -60,12 +67,18 @@ Route::get('/provider/hotel/list', array('as' => 'provider.hotel.list', 'uses' =
 Route::get('/provider/hotel/update', array('as' => 'provider.hotel.update', 'uses' => 'ProviderController@hotelupdate'));
 Route::post('/provider/hotel/update/post', array('as' => 'provider.hotel.update.post', 'uses' => 'ProviderController@hotelupdatepost'));
 
+});
+
+Route::group(['middleware' => 'authmanager'], function()
+{
+
 #####################System Admin#################################
 Route::get('/manager', array('as' => 'manager.index', 'uses' => 'ManagerController@index'));
 
 Route::get('/manager/package/add', array('as' => 'manager.package.add', 'uses' => 'ManagerController@packageadd'));
 Route::post('/manager/package/add/post', array('as' => 'manager.package.add.post', 'uses' => 'ManagerController@packageaddpost'));
 
+});
 
 
 Route::controllers([

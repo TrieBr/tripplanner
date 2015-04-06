@@ -10,7 +10,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Narrow Jumbotron Template for Bootstrap</title>
+    <title>Trip Planner Login</title>
 
     <!-- Bootstrap core CSS -->
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
@@ -44,27 +44,19 @@
 			  	<div class="panel-heading">
 			    	<h3 class="panel-title">Please sign in</h3>
 			 	</div>
+                <div style="text-align: center;">
+                {{Session::get('message', '')}}
+                </div>
 			  	<div class="panel-body">
 			    	<form accept-charset="UTF-8" role="form" action="{{ route('login.post')}}" method="POST">
 			    	<input type="hidden" name="_token" value="{{ csrf_token() }}">
                     <fieldset>
 			    	  	<div class="form-group">
-			    		    <input class="form-control" placeholder="E-mail" name="email" type="text">
+			    		    <input class="form-control" placeholder="E-mail" name="user" type="text">
 			    		</div>
 			    		<div class="form-group">
 			    			<input class="form-control" placeholder="Password" name="password" type="password" value="">
 			    		</div>
-			    		<div class="checkbox">
-			    	    	<label>
-			    	    		<input name="remember" type="radio" value="customer" checked>Customer
-			    	    	</label> <br/>
-			    	    	<label>
-			    	    		<input name="remember" type="radio" value="provider">Provider
-			    	    	</label><br/>
-			    	    	<label>
-			    	    		<input name="remember" type="radio" value="manager">Manager
-			    	    	</label>
-			    	    </div>
 			    		<input class="btn btn-lg btn-success btn-block" type="submit" value="Login">
 			    	</fieldset>
 			      	</form>

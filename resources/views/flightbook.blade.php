@@ -8,25 +8,24 @@
     <div class="form-group">
       <label class="col-lg-2 ">Seat Number: </label>
       <div class="col-lg-10">
-        23
+        {{$seatnum}}
       </div>
     </div>
     <div class="form-group">
       <label class="col-lg-2 ">Class </label>
       <div class="col-lg-10">
-        The Best Class
+        {{$class}}
       </div>
     </div>
    <div class="form-group">
       <label class="col-lg-2 ">Price</label>
       <div class="col-lg-10">
-        $19,234.99
+        <?php print("$".number_format(floatval($price),2)); ?>
       </div>
     </div>
     <div class="form-group">
       <label class="col-lg-2 "></label>
       <div class="col-lg-10">
-        <button type="button" class="btn btn-success">Confirm</button>
       </div>
     </div>
     

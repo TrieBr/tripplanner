@@ -1,7 +1,7 @@
  @extends('layouts.master')
 
  @section('content') 
- <h3>Package Booking</h3>
+ <h3>Package Booked Sucessfully!</h3>
   <form class="form-horizontal">
   <fieldset>
     <legend>Flight Details</legend>
@@ -55,7 +55,6 @@
     <div class="form-group">
       <label class="col-lg-2 "></label>
       <div class="col-lg-10">
-        <button type="button" class="btn btn-success">Confirm</button>
       </div>
     </div>
     

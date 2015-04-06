@@ -1,5 +1,9 @@
 <?php namespace App\Http\Controllers;
 
+use Request;
+use Config;
+use Session;
+use mysqli;
 class LoginController extends Controller {
 
 	/*
@@ -40,7 +44,35 @@ class LoginController extends Controller {
 	 */
 	public function post()
 	{
-		return redirect()->route('index'); //view('login');
+		$username = Request::input('user');
+		$password = Request::input('password');
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT UserNum, UserType FROM userpass WHERE Username = '".$username."' AND Password = '".$password."';";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_num_rows($result)==1) {
+					$row = $result->fetch_array();
+					Session::put('user.id',$row['UserNum']);
+					Session::put('user.type',$row['UserType']);
+					Session::put('user.name',$username);
+					return redirect()->route('index'); //view('login');
+				}
+			}	
+				Session::flash('message','Invalid credentials');
+				return view('login');	//Error has occured
+		}
+		return view('login');	//Error has occured	
 	}
+	/*
+	User is logging out
 
+	*/
+	public function logout()
+	{
+		Session::flush();
+		return redirect()->route('login');
+	}
 }

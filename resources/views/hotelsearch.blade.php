@@ -8,25 +8,23 @@
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Location</label>
                     <div class="col-lg-10">
-                      <select class="form-control" id="select">
-                        <option>1</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4</option>
-                        <option>5</option>
+                      <select class="form-control" id="select" name="location">
+                        <?php foreach($locationList as $location)
+                          echo "<option value='".$location['AirportCode']."'>".$location['CityName']."</option>";
+                      ?>
                       </select>
                     </div>
     </div>
     <div class="form-group">
       <label for="inputEmail" class="col-lg-2 control-label">Date</label>
       <div class="col-lg-10">
-        <input type="text" class="form-control" id="inputEmail" placeholder="Date">
+        <input type="text" class="form-control" id="checkindate" name="checkindate" placeholder="Date">
       </div>
     </div>
     <div class="form-group">
       <label for="inputEmail" class="col-lg-2 control-label">Nights</label>
       <div class="col-lg-10">
-        <input type="text" class="form-control" id="inputEmail" placeholder="# of Nights">
+        <input type="text" class="form-control" id="nights" name="nights" placeholder="# of Nights">
       </div>
     </div>
     <div class="form-group">
@@ -36,4 +34,10 @@
     </div>
   </fieldset>
 </form>
+<script>
+$('#checkindate').datepicker({
+    format: "yyyy-mm-dd",
+    todayHighlight: true
+});
+</script>
 @stop

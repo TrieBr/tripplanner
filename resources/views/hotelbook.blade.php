@@ -8,31 +8,31 @@
     <div class="form-group">
       <label class="col-lg-2 ">Check-in Date:</label>
       <div class="col-lg-10">
-        Last Thursday.
+        {{$checkindate}}
       </div>
     </div>
     <div class="form-group">
       <label class="col-lg-2 ">Price</label>
       <div class="col-lg-10">
-        $888.888 per hour
+        ${{number_format($price,2)}}
       </div>
     </div>
    <div class="form-group">
       <label class="col-lg-2 ">Room No.</label>
       <div class="col-lg-10">
-        42
+        {{$roomno}}
       </div>
     </div>
      <div class="form-group">
       <label class="col-lg-2 ">Length of Stay</label>
       <div class="col-lg-10">
-        5 Nights
+        {{$nights}} Nights
       </div>
     </div>
     <div class="form-group">
       <label class="col-lg-2 "></label>
       <div class="col-lg-10">
-        <button type="button" class="btn btn-success">Confirm</button>
+
       </div>
     </div>
     

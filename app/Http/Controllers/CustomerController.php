@@ -1,5 +1,8 @@
 <?php namespace App\Http\Controllers;
 
+use Config;
+use Request;
+use Session;
 class CustomerController extends Controller {
 
 	/**
@@ -29,7 +32,8 @@ class CustomerController extends Controller {
 	 */
 	public function flightsearch()
 	{
-		return view('flightsearch');
+		$locations = Queries::LocationList();
+		return view('flightsearch')->with('locationList', $locations);
 	}
 
 	/**
@@ -39,7 +43,35 @@ class CustomerController extends Controller {
 	 */
 	public function flightsearchresults()
 	{
-		return view('flightsearchresults');
+		//Probably want to validate the input
+		$location1 = Request::input('from');
+		$location2 = Request::input('dest');
+		$departDate = Request::input('departDate');
+
+		$all_results = array();
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), f.Capacity
+				FROM 	Flight AS f,Provider AS p,Ticket AS t
+				WHERE	f.ManagedBy = p.ProviderNum
+				AND		t.OnFlightNumber = f.FlightNo
+				AND		f.DepartingFrom = '".$location1."'
+				AND 	f.ArrivingAt = '".$location2."'
+				AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0
+				GROUP BY f.FlightNo
+				HAVING 	Count(t.SeatNum)<f.Capacity";
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$all_results[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+		return view('flightsearchresults')->with('results', $all_results);
 	}
 
 	/**
@@ -47,9 +79,18 @@ class CustomerController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function flightbook()
+	public function flightbook($flightno)
 	{
-		return view('flightbook');
+		$flightNumber = $flightno;	//Sanitize this?
+		$input = array('First','Business','Economy','Cargo','Pilot');
+		$cl = $input[rand(0,4)]; 
+		$price = rand(400,10000);
+
+		if($r = Queries::BookFlight($flightNumber,$cl, $price)) {
+			return view('flightbook')->with('seatnum', $r)->with('class', $cl)->with('price',$price);
+		}else{
+			return redirect()->route('flight.search');
+		}
 	}
 
 	/**
@@ -59,7 +100,8 @@ class CustomerController extends Controller {
 	 */
 	public function hotelsearch()
 	{
-		return view('hotelsearch');
+		$locations = Queries::LocationList();
+		return view('hotelsearch')->with('locationList', $locations);
 	}
 
 	/**
@@ -69,7 +111,34 @@ class CustomerController extends Controller {
 	 */
 	public function hotelsearchresults()
 	{
-		return view('hotelsearchresults');
+		$location = Request::input('location');
+		$checkindate = Request::input('checkindate');
+		$nights = Request::input('nights');
+		$all_results = array();
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT HotelName, Address, StartingPrice FROM Hotel"; /*SELECT 	HotelName, Address, StartingPrice, h.Capacity
+						FROM 	Hotel AS h, Reservation AS r
+						WHERE 	h.Address = r.forhotel
+						AND 	BasedIn = '{$location}'
+						AND		(DATEDIFF('{$checkindate}', DATE(r.CheckInDate))<=0     AND		DATEDIFF('{$checkindate}', DATE(r.CheckOutDate))>=0)
+						GROUP BY h.Address
+						HAVING	count(*) < h.Capacity;";*/
+				//print($query);
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$all_results[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+		Session::flash('checkin',$checkindate);
+		Session::flash('nights', $nights);
+		return view('hotelsearchresults')->with('results',$all_results);
 	}
 
 	/**
@@ -77,9 +146,24 @@ class CustomerController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function hotelbook()
+	public function hotelbook($id)
 	{
-		return view('hotelbook');
+		if (!Session::has("checkin")) {
+			Session::flash("message","An error has occured. Please try searching again.");
+			return redirect()->route('hotel.search');
+		}
+
+		$hotelID = $id;
+		$checkindate = Session::get('checkin');
+		$nights = Session::get('nights');
+		print($checkindate);
+		$price = rand(400,10000);
+		$checkoutdate = date("Y-m-d", strtotime("+".$nights."days", strtotime($checkindate)));
+		if ($r = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate)) {
+			return view('hotelbook')->with('checkindate', $checkindate)->with('price', $price)->with('roomno', $r)->with("nights", $nights);
+		}else{
+			return redirect()->route('hotel.search');
+		}
 	}
 
 
@@ -90,7 +174,22 @@ class CustomerController extends Controller {
 	 */
 	public function packages()
 	{
-		return view('packages');
+		$all_results = array();
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT	PackName, DateOffered, Discount FROM	Package;"; 
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$all_results[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+		return view('packages')->with('results', $all_results);
 	}
 
 	/**
@@ -98,9 +197,37 @@ class CustomerController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function packagebook()
+	public function packagebook($id)
 	{
-		return view('packagebook');
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			if ($result = mysqli_query($mysqli,"SELECT StayingAt, FlyingBy, DateOffered, Discount FROM package WHERE PackName = '".mysqli_real_escape_string($mysqli,$id)."'") ) {
+				$packagedetails = mysqli_fetch_array($result);
+			}
+			$hotelID = $packagedetails['StayingAt'];
+			$checkindate = $packagedetails['DateOffered'];
+			$nights = 5;
+			$price = rand(400,10000)*$packagedetails['Discount'];
+			$checkoutdate = date("Y-m-d", strtotime("+".$nights."days", strtotime($checkindate)));
+			if ($h = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate)) {
+				$flightNumber = $packagedetails['FlyingBy'];	//Sanitize this?
+				$input = array('First','Business','Economy','Cargo','Pilot');
+				$cl = $input[rand(0,4)]; 
+				$price = rand(400,10000);
+					if($f = Queries::BookFlight($flightNumber,$cl, $price)) {
+						return view('packagebook')->with(
+								array('as' => 'flight.review.post',
+									'uses' => 'CustomerController@reviewflightpost')
+							);
+					}
+			}
+
+			
+		}
+		return redirect()->route('package.browse');
 	}
 
 	/**
@@ -110,7 +237,37 @@ class CustomerController extends Controller {
 	 */
 	public function orderhistory()
 	{
-		return view('orderhistory');
+		$flightResults = array();
+		$hotelresults = array();
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT	f.FlightNo, f.ArrivingAt, f.DepartTime, t.SeatNum, t.Class, t.Price
+					FROM	Ticket AS t, Flight AS f
+					WHERE	t.OnFlightNumber = f.FlightNo
+					AND 	t.BookedBy = '".Session::get('user.id')."';"; 
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$flightResults[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+			$query = "SELECT 	h.HotelName, h.BasedIn, r.CheckInDate, r.CheckInDate, r.CheckOutDate, h.Address
+				FROM 	Reservation AS r, Hotel AS h
+				WHERE 	r.ForHotel = h.Address
+				AND 	r.PlacedBy = '".Session::get('user.id')."';"; 
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$hotelresults[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+		return view('orderhistory')->with('flightresults', $flightResults)->with('hotelresults', $hotelresults);
 	}
 
 	/**
@@ -118,8 +275,9 @@ class CustomerController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function reviewhotel()
+	public function reviewhotel($id)
 	{
+		Session::set('hotelid', $id);
 		return view('reviewhotel');
 	}
 
@@ -129,7 +287,29 @@ class CustomerController extends Controller {
 	 * @return Response
 	 */
 	public function reviewhotelpost()
-	{
+	{	
+		$comments = Request::input('comments');
+		$rating = Request::input('rating');
+		if (!Session::has('hotelid')) {
+			Session::flash('message','Session Error. Please try again.');
+			return redirect()->route('order.history');
+		}
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "INSERT INTO Review (Comments, Rating, LeftBy, HotelAddress, FlightNumber)
+						VALUES	('{$comments}', '{$rating}', '".Session::get('user.id')."', '".Session::get('hotelid')."', NULL);";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_affected_rows($mysqli)==0) {
+					Session::flash('message','Error booking ticket.');
+				}
+			}else{
+				Session::flash('message','Error executing query.');
+			}
+		}
+		Session::forget('hotelid');
 		return view('reviewpost');
 	}
 
@@ -138,8 +318,9 @@ class CustomerController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function reviewflight()
+	public function reviewflight($id)
 	{
+		Session::set('flightid', $id);
 		return view('reviewflight');
 	}
 
@@ -150,6 +331,28 @@ class CustomerController extends Controller {
 	 */
 	public function reviewflightpost()
 	{
+		$comments = Request::input('comments');
+		$rating = Request::input('rating');
+		if (!Session::has('flightid')) {
+			Session::flash('message','Session Error. Please try again.');
+			return redirect()->route('order.history');
+		}
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "INSERT INTO Review (Comments, Rating, LeftBy, HotelAddress, FlightNumber)
+						VALUES	('{$comments}', '{$rating}', '".Session::get('user.id')."', NULL, '".Session::get('flightid')."');";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_affected_rows($mysqli)==0) {
+					Session::flash('message','Error booking ticket.');
+				}
+			}else{
+				Session::flash('message','Error executing query.');
+			}
+		}
+		Session::forget('flightid');
 		return view('reviewpost');
 	}
 
