@@ -163,13 +163,14 @@ class CustomerController extends Controller {
 		{
 			Session::flash('message','Error connecting to database.');
 		}else{
-			$query = "SELECT HotelName, Address, StartingPrice FROM Hotel"; /*SELECT 	HotelName, Address, StartingPrice, h.Capacity
-						FROM 	Hotel AS h, Reservation AS r
-						WHERE 	h.Address = r.forhotel
-						AND 	BasedIn = '{$location}'
-						AND		(DATEDIFF('{$checkindate}', DATE(r.CheckInDate))<=0     AND		DATEDIFF('{$checkindate}', DATE(r.CheckOutDate))>=0)
+			$query = "SELECT  HotelName, Address, StartingPrice, h.Capacity
+						FROM    Hotel AS h LEFT OUTER JOIN Reservation AS r ON h.Address = r.forhotel
+						WHERE   BasedIn = '".$location."'
+						AND     (r.CheckInDate IS NULL OR (DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0     AND        DATEDIFF(DATE('".$checkindate."'), DATE(r.CheckOutDate))>=0))
 						GROUP BY h.Address
-						HAVING	count(*) < h.Capacity;";*/
+						HAVING  count(*)-1 < h.Capacity;";
+
+
 				//print($query);
 			if ($result = mysqli_query($mysqli,$query)) {
 				while ($r = mysqli_fetch_array($result)) {
