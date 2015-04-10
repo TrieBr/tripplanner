@@ -59,9 +59,10 @@ class CustomerController extends Controller {
 				WHERE	f.ManagedBy = p.ProviderNum
 				AND		t.OnFlightNumber = f.FlightNo
 				AND		f.DepartingFrom = '".$location1."'
-				AND 	f.ArrivingAt = '".$location2."'
-				AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0
-				GROUP BY f.FlightNo
+				AND 	f.ArrivingAt = '".$location2."'";
+				if ($departDate!="")
+					$query .= " AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0 ";
+				$query .= "GROUP BY f.FlightNo
 				HAVING 	Count(t.SeatNum)<f.Capacity";
 			if ($result = mysqli_query($mysqli,$query)) {
 				while ($r = mysqli_fetch_array($result)) {
@@ -91,6 +92,48 @@ class CustomerController extends Controller {
 		}else{
 			return redirect()->route('flight.search');
 		}
+	}
+	/**
+	 * Shows details for a specific flight
+	 *
+	 * @return Response
+	 */
+	public function flightdetails($flightno)
+	{
+		$all_results = array();
+
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT f.FlightNo, f.DepartTime, f.ArriveTime, ld.CityName, la.CityName, p.ProvName, f.BaseTicketPrice, AVG(r.Rating) FROM 
+						flight AS f, location AS ld, location AS la, review AS r, provider AS p 
+						WHERE f.FlightNo = '".mysqli_real_escape_string($mysqli,$flightno)."' 
+						AND ld.AirportCode = f.DepartingFrom 
+						AND la.AirportCode = f.ArrivingAt 
+						AND p.ProviderNum = f.ManagedBy 
+						AND r.FlightNumber = f.FlightNo;";
+
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_num_rows($result)==0) Session::flash('message', "Flight with that ID could not be found.".mysqli_num_rows($result));
+				$details = mysqli_fetch_array($result);
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+
+			$query = "SELECT r.Rating, r.Comments FROM review AS r  
+						WHERE r.FlightNumber='".mysqli_real_escape_string($mysqli,$flightno)."';";
+
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$all_results[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+			return view('flightdetails')->with('details', $details)->with('reviews', $all_results);
 	}
 
 	/**
@@ -166,6 +209,48 @@ class CustomerController extends Controller {
 		}
 	}
 
+	/**
+	 * Shows details/reviews for specified hotel
+	 *
+	 * @return Response
+	 */
+	public function hoteldetails($id)
+	{
+		$all_results = array();
+
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT h.Address, h.HotelName, l.CityName, h.StartingPrice ,p.ProvName, AVG(r.Rating) FROM Hotel AS h, Provider AS p, review AS r, Location as l
+						WHERE h.RunBy=p.ProviderNum 
+						AND h.Address='".mysqli_real_escape_string($mysqli,$id)."' 
+						AND r.HotelAddress=h.Address 
+						AND l.AirportCode = h.BasedIn
+						;";
+
+			if ($result = mysqli_query($mysqli,$query)) {
+				$details = mysqli_fetch_array($result);
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+
+			$query = "SELECT r.Rating, r.Comments FROM review AS r  
+						WHERE r.HotelAddress='".mysqli_real_escape_string($mysqli,$id)."';";
+
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$all_results[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+			return view('hoteldetails')->with('details', $details)->with('reviews', $all_results);
+	
+	}
+
 
 	/**
 	 * The page showing all of the travel packages
@@ -216,17 +301,25 @@ class CustomerController extends Controller {
 				$flightNumber = $packagedetails['FlyingBy'];	//Sanitize this?
 				$input = array('First','Business','Economy','Cargo','Pilot');
 				$cl = $input[rand(0,4)]; 
-				$price = rand(400,10000);
-					if($f = Queries::BookFlight($flightNumber,$cl, $price)) {
-						return view('packagebook')->with(
-								array('as' => 'flight.review.post',
-									'uses' => 'CustomerController@reviewflightpost')
+				$flightprice = rand(400,10000);
+					if($f = Queries::BookFlight($flightNumber,$cl, $flightprice)) {
+						return view('packagebook')->with('bookinfo',
+								array('hotelCheckIn' => $checkindate,
+									'nights' => $nights,
+									'hotelPrice' => $price,
+									'flightclass' => $cl,
+									'flightprice' => $flightprice,
+									'flightseat' => $f,
+									'hotelroom' => $h
+									)
 							);
 					}
 			}
 
 			
 		}
+	
+
 		return redirect()->route('package.browse');
 	}
 

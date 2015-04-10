@@ -18,13 +18,13 @@
     <div class="form-group">
       <label for="inputEmail" class="col-lg-2 control-label">Date</label>
       <div class="col-lg-10">
-        <input type="text" class="form-control" id="checkindate" name="checkindate" placeholder="Date">
+        <input type="text" class="form-control" id="checkindate" name="checkindate" placeholder="Date" required>
       </div>
     </div>
     <div class="form-group">
       <label for="inputEmail" class="col-lg-2 control-label">Nights</label>
       <div class="col-lg-10">
-        <input type="text" class="form-control" id="nights" name="nights" placeholder="# of Nights">
+        <input type="text" class="form-control" id="nights" name="nights" placeholder="# of Nights" required>
       </div>
     </div>
     <div class="form-group">

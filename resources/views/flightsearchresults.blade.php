@@ -10,6 +10,7 @@
       <th>Provider</th>
       <th >Remaining Seats</th>
       <th style="text-align: center;">Book</th>
+      <th style="text-align: center;">Details</th>
     </tr>
   </thead>
   <tbody>
@@ -19,6 +20,7 @@
       <td>{{$result['ProvName']}}</td>
       <td>{{$result[2]}}</td>
       <td style="text-align: center;"><a href="{{ route('flight.book', $result['FlightNo']) }}"><button class="btn btn-primary btn-xs" type="button">Book Now!</button></a></td>
+      <td style="text-align: center;"><a href="{{ route('flight.details', $result['FlightNo']) }}"><button class="btn btn-info btn-xs" type="button">Details</button></a></td>
     </tr>
   <?php } ?>
   

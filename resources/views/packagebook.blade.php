@@ -8,19 +8,19 @@
     <div class="form-group">
       <label class="col-lg-2 ">Seat Number: </label>
       <div class="col-lg-10">
-        23
+        {{$bookinfo['flightseat']}}
       </div>
     </div>
     <div class="form-group">
       <label class="col-lg-2 ">Class </label>
       <div class="col-lg-10">
-        The Best Class
+        {{$bookinfo['flightclass']}}
       </div>
     </div>
    <div class="form-group">
       <label class="col-lg-2 ">Price</label>
       <div class="col-lg-10">
-        $19,234.99
+        ${{number_format($bookinfo['flightprice'])}}
       </div>
     </div>   
   </fieldset>
@@ -31,25 +31,25 @@
     <div class="form-group">
       <label class="col-lg-2 ">Check-in Date:</label>
       <div class="col-lg-10">
-        Last Thursday.
+        {{$bookinfo['hotelCheckIn']}}
       </div>
     </div>
     <div class="form-group">
       <label class="col-lg-2 ">Price</label>
       <div class="col-lg-10">
-        $888.888 per hour
+        ${{number_format($bookinfo['hotelPrice'])}}
       </div>
     </div>
    <div class="form-group">
       <label class="col-lg-2 ">Room No.</label>
       <div class="col-lg-10">
-        42
+        {{$bookinfo['hotelroom']}}
       </div>
     </div>
      <div class="form-group">
       <label class="col-lg-2 ">Length of Stay</label>
       <div class="col-lg-10">
-        5 Nights
+        {{$bookinfo['nights']}} Nights
       </div>
     </div>
     <div class="form-group">

@@ -25,11 +25,15 @@ Route::get('/', array('as' => 'index', 'uses' => 'CustomerController@index'));
 Route::get('flights', array('as' => 'flight.search', 'uses' => 'CustomerController@flightsearch'));
 Route::post('flights/search', array('as' => 'flight.search.post', 'uses' => 'CustomerController@flightsearchresults'));
 Route::get('flights/book/{id}', array('as' => 'flight.book', 'uses' => 'CustomerController@flightbook'));
+Route::get('flights/details/{id}', array('as' => 'flight.details', 'uses' => 'CustomerController@flightdetails'));
+
+
 
 //Hotels
 Route::get('hotels', array('as' => 'hotel.search', 'uses' => 'CustomerController@hotelsearch'));
 Route::post('hotels/search', array('as' => 'hotel.search.post', 'uses' => 'CustomerController@hotelsearchresults'));
 Route::get('hotels/book/{id}', array('as' => 'hotel.book', 'uses' => 'CustomerController@hotelbook'));
+Route::get('hotels/details/{id}', array('as' => 'hotel.details', 'uses' => 'CustomerController@hoteldetails'));
 
 //Travel Packages
 Route::get('packages', array('as' => 'package.browse', 'uses' => 'CustomerController@packages'));

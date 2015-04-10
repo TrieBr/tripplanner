@@ -10,6 +10,7 @@
       <th>Address</th>
       <th>StartingPrice</th>
       <th style="text-align: center;">Book</th>
+      <th style="text-align: center;">Hotel</th>
     </tr>
   </thead>
   <tbody>
@@ -19,6 +20,7 @@
       <td>{{$result['Address']}}</td>
       <td>{{$result['StartingPrice']}}</td>
       <td style="text-align: center;"><a href="{{ route('hotel.book', $result['Address']) }}"><button class="btn btn-primary btn-xs" type="button">Book Now!</button></a></td>
+      <td style="text-align: center;"><a href="{{ route('hotel.details', $result['Address']) }}"><button class="btn btn-info btn-xs" type="button">Details</button></a></td>
     </tr>
     <?php } ?>
   </tbody>
