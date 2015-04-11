@@ -6,42 +6,21 @@
   <thead>
     <tr>
       <th>Flightno.</th>
-      <th>Depart Date</th>
-      <th >Remaining Seats</th>
+      <th>Departing From</th>
+      <th >Arriving at</th>
       <th style="text-align: center;">Update</th>
     </tr>
   </thead>
   <tbody>
+  <?php foreach($flights as $flight) { ?>
     <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.flight.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
+      <td>{{$flight['FlightNo']}}</td>
+      <td>{{$flight['DepartingFrom']}}</td>
+      <td>{{$flight['ArrivingAt']}}</td>
+      <td style="text-align: center;"><a href="{{ route('provider.flight.update', $flight['FlightNo']) }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
     </tr>
-    <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.flight.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.flight.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.flight.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.flight.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
-    </tr>
+   
+   <?php } ?>
   </tbody>
 </table> 
 @stop

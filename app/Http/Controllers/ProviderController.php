@@ -1,5 +1,8 @@
 <?php namespace App\Http\Controllers;
 
+use Config;
+use Session;
+use Input;
 class ProviderController extends Controller {
 
 	/**
@@ -29,7 +32,8 @@ class ProviderController extends Controller {
 	 */
 	public function flightadd()
 	{
-		return view('provider.flightadd');
+		$locations = Queries::LocationList();
+		return view('provider.flightadd')->with('locationList', $locations);
 	}
 
 	/**
@@ -39,6 +43,27 @@ class ProviderController extends Controller {
 	 */
 	public function flightaddpost()
 	{
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		$flightno = mysqli_real_escape_string($mysqli,Input::get('flightno'));
+		$departdate = mysqli_real_escape_string($mysqli,Input::get('departdate'));
+		$capacity = mysqli_real_escape_string($mysqli,Input::get('flightcapacity'));
+		$departlocation = mysqli_real_escape_string($mysqli,Input::get('departlocation'));
+		$arrivelocation = mysqli_real_escape_string($mysqli,Input::get('arrivelocation'));
+		
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "INSERT INTO     flight(FlightNo, DepartTime, DepartingFrom, ArrivingAt, ManagedBy, Capacity)
+					VALUES          ('".$flightno."', '".$departdate."', '".$departlocation."', '".$arrivelocation."', ".Session::get('provider.id').", ".$capacity.");";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_affected_rows($mysqli)==0) {
+					Session::flash('message','Error Adding Flight!');
+				}
+			}else{
+				Session::flash('message','Error executing query.');
+			}
+		}
 		return view('provider.updateaddpost');
 	}
 
@@ -49,7 +74,27 @@ class ProviderController extends Controller {
 	 */
 	public function flightlist()
 	{
-		return view('provider.flightlist');
+		$all_results = array();
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT  FlightNo, DepartingFrom, ArrivingAt
+						FROM    flight
+						WHERE   ManagedBy = ".Session::get('provider.id').";";
+
+
+				//print($query);
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$all_results[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+		return view('provider.flightlist')->with('flights', $all_results);
 	}
 
 	/**
@@ -57,9 +102,29 @@ class ProviderController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function flightupdate()
+	public function flightupdate($id)
 	{
-		return view('provider.flightupdate');
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT f.FlightNo, f.DepartTime, f.ArriveTime, ld.CityName, la.CityName, p.ProvName, f.BaseTicketPrice, f.Capacity FROM 
+						flight AS f, location AS ld, location AS la, provider AS p 
+						WHERE f.FlightNo = '".mysqli_real_escape_string($mysqli,$id)."' 
+						AND ld.AirportCode = f.DepartingFrom 
+						AND la.AirportCode = f.ArrivingAt 
+						AND p.ProviderNum = f.ManagedBy;";
+
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_num_rows($result)==0) Session::flash('message', "Flight with that ID could not be found.".mysqli_num_rows($result));
+				$details = mysqli_fetch_array($result);
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+	
+		}
+		return view('provider.flightupdate')->with('details', $details);
 	}
 
 	/**
@@ -67,8 +132,28 @@ class ProviderController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function flightupdatepost()
+	public function flightupdatepost($id)
 	{
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		$flightno = mysqli_real_escape_string($mysqli,Input::get('flightno'));
+		$departdate = mysqli_real_escape_string($mysqli,Input::get('departdate'));
+		$capacity = mysqli_real_escape_string($mysqli,Input::get('capacity'));
+		$price = mysqli_real_escape_string($mysqli,Input::get('price'));
+		
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "UPDATE flight SET FlightNo='".$flightno."', DepartTime='".$departdate."', Capacity=".$capacity.", BaseTicketPrice=".$price."
+						WHERE FlightNo = '".$id."';";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_affected_rows($mysqli)==0) {
+					Session::flash('message','Error Updating Flight!'. $query);
+				}
+			}else{
+				Session::flash('message','Error executing query.');
+			}
+		}
 		return view('provider.updateaddpost');
 	}
 
@@ -79,7 +164,8 @@ class ProviderController extends Controller {
 	 */
 	public function hoteladd()
 	{
-		return view('provider.hoteladd');
+		$locations = Queries::LocationList();
+		return view('provider.hoteladd')->with('locationList', $locations);
 	}
 
 	/**
@@ -89,6 +175,26 @@ class ProviderController extends Controller {
 	 */
 	public function hoteladdpost()
 	{
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		$name = mysqli_real_escape_string($mysqli,Input::get('name'));
+		$address= mysqli_real_escape_string($mysqli,Input::get('address'));
+		$capacity = mysqli_real_escape_string($mysqli,Input::get('capacity'));
+		$location = mysqli_real_escape_string($mysqli,Input::get('location'));
+		$price = mysqli_real_escape_string($mysqli,Input::get('price'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "INSERT INTO    Hotel
+VALUES          ('".$address."', ".$capacity.", '".$name."', '".$location."', ".Session::get('provider.id').", ".$price.");";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_affected_rows($mysqli)==0) {
+					Session::flash('message','Error Adding Hotel!');
+				}
+			}else{
+				Session::flash('message','Error executing query.');
+			}
+		}
 		return view('provider.updateaddpost');
 	}
 
@@ -99,7 +205,27 @@ class ProviderController extends Controller {
 	 */
 	public function hotellist()
 	{
-		return view('provider.hotellist');
+		$all_results = array();
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT  HotelName, Address
+					FROM    hotel
+					WHERE   RunBy = ".Session::get('provider.id').";";
+
+
+				//print($query);
+			if ($result = mysqli_query($mysqli,$query)) {
+				while ($r = mysqli_fetch_array($result)) {
+			    	$all_results[] = $r;
+				}
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+		}
+		return view('provider.hotellist')->with('hotels', $all_results);
 	}
 
 	/**
@@ -107,9 +233,25 @@ class ProviderController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function hotelupdate()
+	public function hotelupdate($id)
 	{
-		return view('provider.hotelupdate');
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "SELECT *  FROM Hotel AS h
+						WHERE h.Address='".mysqli_real_escape_string($mysqli,$id)."';";
+
+			if ($result = mysqli_query($mysqli,$query)) {
+				$details = mysqli_fetch_array($result);
+			}else{
+				Session::flash('message','Error executing search query.');
+			}
+
+		
+		}
+		return view('provider.hotelupdate')->with('details', $details);
 	}
 
 	/**
@@ -117,8 +259,28 @@ class ProviderController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function hotelupdatepost()
+	public function hotelupdatepost($id)
 	{
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		$name = mysqli_real_escape_string($mysqli,Input::get('name'));
+		$address = mysqli_real_escape_string($mysqli,Input::get('address'));
+		$capacity = mysqli_real_escape_string($mysqli,Input::get('capacity'));
+		$price = mysqli_real_escape_string($mysqli,Input::get('price'));
+		
+		if (!$mysqli)
+		{
+			Session::flash('message','Error connecting to database.');
+		}else{
+			$query = "UPDATE hotel SET HotelName='".$name."', Address='".$address."', Capacity=".$capacity.", StartingPrice=".$price."
+						WHERE Address = '".$id."';";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_affected_rows($mysqli)==0) {
+					Session::flash('message','Error Updating Flight!'. $query);
+				}
+			}else{
+				Session::flash('message','Error executing query.');
+			}
+		}
 		return view('provider.updateaddpost');
 	}
 	

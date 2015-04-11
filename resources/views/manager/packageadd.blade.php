@@ -8,36 +8,32 @@
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Name</label>
                     <div class="col-lg-10">
-                     <input type="text" class="form-control" id="inputEmail" placeholder="Name">
+                     <input type="text" class="form-control" id="inputEmail" placeholder="Name" name="name" required>
                     </div>
     </div>
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Discount</label>
                     <div class="col-lg-10">
-                     <input type="text" class="form-control" id="inputEmail" placeholder="% Discount">
+                     <input type="text" class="form-control" id="inputEmail" placeholder="% Discount" name="discount">
                     </div>
     </div>
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Flight</label>
                     <div class="col-lg-10">
-                     <select class="form-control" id="select">
-                        <option>3455</option>
-                        <option>34</option>
-                        <option>646</option>
-                        <option>346</option>
-                        <option>3466</option>
+                     <select class="form-control" id="select" name="flight">
+                        <?php foreach($flightlist as $flight)
+                          echo "<option value='".$flight['FlightNo']."'>".$flight['FlightNo']."</option>";
+                      ?>
                       </select>
                     </div>
     </div>
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Hotel</label>
                     <div class="col-lg-10">
-                     <select class="form-control" id="select">
-                        <option>Calgary Hotel</option>
-                        <option>Hotel 2</option>
-                        <option>3</option>
-                        <option>4</option>
-                        <option>5</option>
+                     <select class="form-control" id="select" name="hotel">
+                        <?php foreach($hotellist as $hotel)
+                          echo "<option value='".$hotel['Address']."'>".$hotel['HotelName']."</option>";
+                      ?>
                       </select>
                     </div>
     </div>

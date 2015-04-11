@@ -61,15 +61,15 @@ Route::get('/provider', array('as' => 'provider.index', 'uses' => 'ProviderContr
 Route::get('/provider/flight/add', array('as' => 'provider.flight.add', 'uses' => 'ProviderController@flightadd'));
 Route::post('/provider/flight/add/post', array('as' => 'provider.flight.add.post', 'uses' => 'ProviderController@flightaddpost'));
 Route::get('/provider/flight/list', array('as' => 'provider.flight.list', 'uses' => 'ProviderController@flightlist'));
-Route::get('/provider/flight/update', array('as' => 'provider.flight.update', 'uses' => 'ProviderController@flightupdate'));
-Route::post('/provider/flight/update/post', array('as' => 'provider.flight.update.post', 'uses' => 'ProviderController@flightupdatepost'));
+Route::get('/provider/flight/update/{id}', array('as' => 'provider.flight.update', 'uses' => 'ProviderController@flightupdate'));
+Route::post('/provider/flight/update/{id}/post', array('as' => 'provider.flight.update.post', 'uses' => 'ProviderController@flightupdatepost'));
 
 //Hotels
 Route::get('/provider/hotel/add', array('as' => 'provider.hotel.add', 'uses' => 'ProviderController@hoteladd'));
 Route::post('/provider/hotel/add/post', array('as' => 'provider.hotel.add.post', 'uses' => 'ProviderController@hoteladdpost'));
 Route::get('/provider/hotel/list', array('as' => 'provider.hotel.list', 'uses' => 'ProviderController@hotellist'));
-Route::get('/provider/hotel/update', array('as' => 'provider.hotel.update', 'uses' => 'ProviderController@hotelupdate'));
-Route::post('/provider/hotel/update/post', array('as' => 'provider.hotel.update.post', 'uses' => 'ProviderController@hotelupdatepost'));
+Route::get('/provider/hotel/update/{id}', array('as' => 'provider.hotel.update', 'uses' => 'ProviderController@hotelupdate'));
+Route::post('/provider/hotel/update/{id}/post', array('as' => 'provider.hotel.update.post', 'uses' => 'ProviderController@hotelupdatepost'));
 
 });
 

@@ -7,33 +7,18 @@
     <tr>
       <th>Name</th>
       <th>Address</th>
-      <th>Capacity</th>
-      <th>Location</th>
       <th style="text-align: center;">Update</th>
     </tr>
   </thead>
   <tbody>
+    <?php foreach($hotels as $hotel) { ?>
     <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.hotel.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
+      <td>{{$hotel['HotelName']}}</td>
+      <td>{{$hotel['Address']}}</td>
+      <td style="text-align: center;"><a href="{{ route('provider.hotel.update', $hotel['Address']) }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
     </tr>
-    <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.hotel.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td>Column content</td>
-      <td style="text-align: center;"><a href="{{ route('provider.hotel.update') }}"><button class="btn btn-primary btn-xs" type="button">Update</button></a></td>
-    </tr>
+     <?php } ?>
+   
   </tbody>
 </table> 
 @stop

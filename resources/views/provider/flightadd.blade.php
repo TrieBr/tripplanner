@@ -8,42 +8,38 @@
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Flight Number</label>
                     <div class="col-lg-10">
-                     <input type="text" class="form-control" id="inputEmail" placeholder="Flight No.">
+                     <input type="text" class="form-control" id="inputEmail" placeholder="Flight No." name="flightno" required>
                     </div>
     </div>
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Date of Flight</label>
                     <div class="col-lg-10">
-                     <input type="text" class="form-control" id="inputEmail" placeholder="Departure Date">
+                     <input type="text" class="form-control" id="flightdate" placeholder="Departure Date" name="departdate" required>
                     </div>
     </div>
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Flight Capacity</label>
                     <div class="col-lg-10">
-                     <input type="text" class="form-control" id="inputEmail" placeholder="Flight Capacity">
+                     <input type="text" class="form-control" id="inputEmail" placeholder="Flight Capacity" name="flightcapacity" required>
                     </div>
     </div>
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Airport of Departure</label>
                     <div class="col-lg-10">
-                     <select class="form-control" id="select">
-                        <option>Calgary</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4</option>
-                        <option>5</option>
+                     <select class="form-control" id="select" name="departlocation">
+                         <?php foreach($locationList as $location)
+                          echo "<option value='".$location['AirportCode']."'>".$location['CityName']."</option>";
+                      ?>
                       </select>
                     </div>
     </div>
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Airport of Arrival</label>
                     <div class="col-lg-10">
-                     <select class="form-control" id="select">
-                        <option>Vancouver</option>
-                        <option>2</option>
-                        <option>3</option>
-                        <option>4</option>
-                        <option>5</option>
+                     <select class="form-control" id="select" name="arrivelocation">
+                         <?php foreach($locationList as $location)
+                          echo "<option value='".$location['AirportCode']."'>".$location['CityName']."</option>";
+                      ?>
                       </select>
                     </div>
     </div>
@@ -54,4 +50,11 @@
     </div>
   </fieldset>
 </form>
+
+<script>
+$('#flightdate').datepicker({
+    format: "yyyy-mm-dd",
+    todayHighlight: true
+});
+</script>
 @stop

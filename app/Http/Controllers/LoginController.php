@@ -58,7 +58,25 @@ class LoginController extends Controller {
 					Session::put('user.id',$row['UserNum']);
 					Session::put('user.type',$row['UserType']);
 					Session::put('user.name',$username);
-					return redirect()->route('index'); //view('login');
+					if ($row['UserType']=="Customer") {
+						return redirect()->route('index'); //view('login');
+					}else if ($row['UserType']=="Provider") {
+						$query = "SELECT p.ProviderNum, p.ProvName, p.ProviderType FROM provider AS p
+									WHERE p.UserId=".$row['UserNum'].";";
+						if ($result = mysqli_query($mysqli,$query)) {
+							$row = $result->fetch_array(); 
+							Session::put('provider.id', $row['ProviderNum']);
+							return redirect()->route('provider.index'); //view('login');
+						}
+					}else if ($row['UserType']=="SysManager") {
+						$query = "SELECT s.ManagerNum FROM sysmanager AS s
+									WHERE s.UserId=".$row['UserNum'].";";
+						if ($result = mysqli_query($mysqli,$query)) {
+							$row = $result->fetch_array(); 
+							Session::put('manager.id', $row['ManagerNum']);
+							return redirect()->route('manager.index'); //view('login');
+						}
+					}
 				}
 			}	
 				Session::flash('message','Invalid credentials');

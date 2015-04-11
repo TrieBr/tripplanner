@@ -57,11 +57,14 @@
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#">Welcome, Manager!</a></li>
+        <li><a href="{{route('logout')}}">Welcome, Manager!</a></li>
       </ul>
     </div>
   </div>
 </nav>
+<?php if (Session::has('message')) { ?>
+<div class="alert alert-info" role="alert">{{Session::get('message')}}</div>
+<?php } ?>
       @yield('content')
     
 

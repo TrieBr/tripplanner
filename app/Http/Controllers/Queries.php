@@ -21,6 +21,44 @@
 			return $all_results;
 		}
 
+		public static function HotelList() {
+			$all_results = array();
+			$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+			if (!$mysqli)
+			{
+				Session::flash('message','Error connecting to database.');
+			}else{
+				$query = "SELECT HotelName, Address FROM hotel;";
+
+				if ($result = mysqli_query($mysqli,$query)) {
+					while ($r = mysqli_fetch_array($result)) {
+
+				    $all_results[] = $r;
+					}
+				}	
+			}
+			return $all_results;
+		}
+
+		public static function FlightList() {
+			$all_results = array();
+			$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+			if (!$mysqli)
+			{
+				Session::flash('message','Error connecting to database.');
+			}else{
+				$query = "SELECT FlightNo FROM flight;";
+
+				if ($result = mysqli_query($mysqli,$query)) {
+					while ($r = mysqli_fetch_array($result)) {
+
+				    $all_results[] = $r;
+					}
+				}	
+			}
+			return $all_results;
+		}
+
 		public static function BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate) {
 			$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
 			if (!$mysqli)
