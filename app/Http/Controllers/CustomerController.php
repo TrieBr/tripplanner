@@ -54,15 +54,15 @@ class CustomerController extends Controller {
 		{
 			Session::flash('message','Error connecting to database.');
 		}else{
-			$query = "SELECT f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), f.Capacity
-				FROM 	Flight AS f,Provider AS p, flight LEFT OUTER JOIN Ticket AS t ON t.OnFlightNumber = flight.FlightNo
-				WHERE	f.ManagedBy = p.ProviderNum
-				AND		f.DepartingFrom = '".$location1."'
-				AND 	f.ArrivingAt = '".$location2."'";
+			$query = "SELECT flight.FlightNo, p.ProvName, (flight.Capacity-count(t.SeatNum)), flight.Capacity
+				FROM 	Provider AS p, flight LEFT OUTER JOIN Ticket AS t ON t.OnFlightNumber = flight.FlightNo
+				WHERE	flight.ManagedBy = p.ProviderNum
+				AND		flight.DepartingFrom = '".$location1."'
+				AND 	flight.ArrivingAt = '".$location2."'";
 				if ($departDate!="")
-					$query .= " AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0 ";
-				$query .= "GROUP BY f.FlightNo
-				HAVING 	Count(t.SeatNum)<f.Capacity";
+					$query .= " AND 	DATEDIFF(DATE(flight.DepartTime), '".$departDate."')=0 ";
+				$query .= "GROUP BY flight.FlightNo
+				HAVING 	Count(t.SeatNum)<flight.Capacity";
 			if ($connecting=="true") {
 			$query = "SELECT  f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), ff.FlightNo, pp.ProvName, (ff.Capacity-count(tt.SeatNum)), f.Capacity, ff.Capacity
 						FROM    Flight AS f,Provider AS p,Ticket AS t, Flight AS ff, Provider AS pp, Ticket AS tt, ConnectsTo AS ct
@@ -102,9 +102,17 @@ class CustomerController extends Controller {
 		$flightNumber = $flightno;	//Sanitize this?
 		$input = array('First','Business','Economy','Cargo','Pilot');
 		$cl = $input[rand(0,4)]; 
-		$price = rand(400,10000);
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		$query =  "SELECT flight.BaseTicketPrice, flight.Capacity,(Count(t.SeatNum))
+				FROM 	flight LEFT OUTER JOIN Ticket AS t ON t.OnFlightNumber = flight.FlightNo
+				WHERE	flight.FlightNo='".mysqli_real_escape_string($mysqli,$flightno)."';";
+		if ($result = mysqli_query($mysqli,$query) ) {
+				$flightprice = mysqli_fetch_array($result);
+			}
 
-		if($r = Queries::BookFlight($flightNumber,$cl, $price)) {
+		$price = (($flightprice[2]/$flightprice["Capacity"])+1) * $flightprice['BaseTicketPrice'];
+
+		if(!(($r = Queries::BookFlight($flightNumber,$cl, $price))===false)) {
 			return view('flightbook')->with('seatnum', $r)->with('class', $cl)->with('price',$price);
 		}else{
 			return redirect()->route('flight.search');
@@ -220,7 +228,7 @@ class CustomerController extends Controller {
 		print($checkindate);
 		$price = rand(400,10000);
 		$checkoutdate = date("Y-m-d", strtotime("+".$nights."days", strtotime($checkindate)));
-		if ($r = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate)) {
+		if (!(($r = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate))===false)) {
 			return view('hotelbook')->with('checkindate', $checkindate)->with('price', $price)->with('roomno', $r)->with("nights", $nights);
 		}else{
 			return redirect()->route('hotel.search');
@@ -315,12 +323,19 @@ class CustomerController extends Controller {
 			$nights = 5;
 			$price = rand(400,10000)*$packagedetails['Discount'];
 			$checkoutdate = date("Y-m-d", strtotime("+".$nights."days", strtotime($checkindate)));
-			if ($h = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate)) {
+			if (!(($h = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate))===false)) {
 				$flightNumber = $packagedetails['FlyingBy'];	//Sanitize this?
 				$input = array('First','Business','Economy','Cargo','Pilot');
 				$cl = $input[rand(0,4)]; 
-				$flightprice = rand(400,10000);
-					if($f = Queries::BookFlight($flightNumber,$cl, $flightprice)) {
+				$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+				$query =  "SELECT flight.BaseTicketPrice, flight.Capacity,(Count(t.SeatNum))
+						FROM 	flight LEFT OUTER JOIN Ticket AS t ON t.OnFlightNumber = flight.FlightNo
+						WHERE	flight.FlightNo='".mysqli_real_escape_string($mysqli,$flightNumber)."';";
+				if ($result = mysqli_query($mysqli,$query) ) {
+						$flightprice = mysqli_fetch_array($result);
+					}
+				$flightprice = (($flightprice[2]/$flightprice["Capacity"])+1) * $flightprice['BaseTicketPrice'];
+					if(!(($f = Queries::BookFlight($flightNumber,$cl, $flightprice))===false)) {
 						return view('packagebook')->with('bookinfo',
 								array('hotelCheckIn' => $checkindate,
 									'nights' => $nights,
