@@ -77,7 +77,7 @@
 						return false;
 					}
 				}else{
-					Session::flash('message','Error executing query.');
+					Session::flash('message','Error executing query.'.mysqli_error($mysqli));
 					return false;
 				}
 			}
@@ -93,7 +93,10 @@
 				if ($result = mysqli_query($mysqli,"(SELECT count(*) FROM Ticket WHERE OnFlightNumber = '".mysqli_real_escape_string($mysqli,$flightNumber)."')") ) {
 					$seatNum = mysqli_fetch_array($result);
 				}
-				
+				if ($result = mysqli_query($mysqli,"(SELECT Capacity FROM flight WHERE FlightNo = '".mysqli_real_escape_string($mysqli,$flightNumber)."')") ) {
+					$flightcapacity = mysqli_fetch_array($result);
+				}
+				if ($seatNum[0]>$flightcapacity["Capacity"]) return false;
 				$query = "	INSERT INTO Ticket
 							VALUES (".$seatNum[0].",
 								'".$cl."',

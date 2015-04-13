@@ -2,6 +2,7 @@
 
 use Closure;
 use Session;
+use Route;
 
 
 class AuthProvider {
@@ -20,6 +21,16 @@ class AuthProvider {
 		}
 		if (Session::get('user.type')!="Provider") {
 			return redirect()->route('login');
+		}
+		if (!(strpos(Route::currentRouteName(),"flight.")===FALSE)) {
+			if (Session::get('provider.type')!="Flight") {
+				return redirect()->route('login');
+			}
+		}
+		if (!(strpos(Route::currentRouteName(),"hotel.")===FALSE)) {
+			if (Session::get('provider.type')!="Hotel") {
+				return redirect()->route('login');
+			}
 		}
 		return $next($request);
 	}

@@ -47,7 +47,7 @@ class CustomerController extends Controller {
 		$location1 = Request::input('from');
 		$location2 = Request::input('dest');
 		$departDate = Request::input('departDate');
-
+		$connecting = Request::input('connecting');
 		$all_results = array();
 		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
 		if (!$mysqli)
@@ -55,21 +55,38 @@ class CustomerController extends Controller {
 			Session::flash('message','Error connecting to database.');
 		}else{
 			$query = "SELECT f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), f.Capacity
-				FROM 	Flight AS f,Provider AS p,Ticket AS t
+				FROM 	Flight AS f,Provider AS p, flight LEFT OUTER JOIN Ticket AS t ON t.OnFlightNumber = flight.FlightNo
 				WHERE	f.ManagedBy = p.ProviderNum
-				AND		t.OnFlightNumber = f.FlightNo
 				AND		f.DepartingFrom = '".$location1."'
 				AND 	f.ArrivingAt = '".$location2."'";
 				if ($departDate!="")
 					$query .= " AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0 ";
 				$query .= "GROUP BY f.FlightNo
 				HAVING 	Count(t.SeatNum)<f.Capacity";
+			if ($connecting=="true") {
+			$query = "SELECT  f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), ff.FlightNo, pp.ProvName, (ff.Capacity-count(tt.SeatNum)), f.Capacity, ff.Capacity
+						FROM    Flight AS f,Provider AS p,Ticket AS t, Flight AS ff, Provider AS pp, Ticket AS tt, ConnectsTo AS ct
+						WHERE   f.ManagedBy = p.ProviderNum
+						AND     ff.ManagedBy = pp.ProviderNum
+						AND     t.OnFlightNumber = f.FlightNo
+						AND     tt.OnFlightNumber = ff.FlightNo
+						AND     ct.DepartingFlightNumber = f.FlightNo
+						AND     ct.ArrivingFlightNumber = ff.FlightNo
+						AND     f.DepartingFrom = '".$location1."'
+						AND     ff.ArrivingAt = '".$location1."'";
+						if ($departDate!="")
+						$query .= " AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0 ";
+						$query .= "GROUP BY f.FlightNo
+						HAVING  count(t.SeatNum)-1<f.Capacity
+						AND     count(tt.SeatNum)-1<ff.Capacity;";
+			}
+
 			if ($result = mysqli_query($mysqli,$query)) {
 				while ($r = mysqli_fetch_array($result)) {
 			    	$all_results[] = $r;
 				}
 			}else{
-				Session::flash('message','Error executing search query.');
+				Session::flash('message','Error executing search query: '.$query);
 			}
 		}
 		return view('flightsearchresults')->with('results', $all_results);
@@ -314,10 +331,17 @@ class CustomerController extends Controller {
 									'hotelroom' => $h
 									)
 							);
-					}
-			}
+					}else{
 
+						mysqli_query($mysqli,"DELETE FROM reservation WHERE CheckInDate='".$checkindate."' AND RoomNum=".$h.";");
+							
+					}
+				
+			}else{
+
+			}
 			
+	
 		}
 	
 

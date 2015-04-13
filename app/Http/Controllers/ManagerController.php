@@ -57,12 +57,14 @@ class ManagerController extends Controller {
 			if ($result = mysqli_query($mysqli,$query)) {
 				if (mysqli_affected_rows($mysqli)==0) {
 					Session::flash('message','Error Adding Package!');
+					return view('manager.packageaddpost')->with('packagemessage'," Error adding the package!");
 				}
 			}else{
 				Session::flash('message','Error executing query.');
+				return view('manager.packageaddpost')->with('packagemessage'," Error adding the package!");
 			}
 		}
-		return view('manager.packageaddpost');
+		return view('manager.packageaddpost')->with('packagemessage'," Package has been added successfully!");
 	}
 
 

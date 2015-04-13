@@ -66,6 +66,7 @@ class LoginController extends Controller {
 						if ($result = mysqli_query($mysqli,$query)) {
 							$row = $result->fetch_array(); 
 							Session::put('provider.id', $row['ProviderNum']);
+							Session::put('provider.type', $row['ProviderType']);
 							return redirect()->route('provider.index'); //view('login');
 						}
 					}else if ($row['UserType']=="SysManager") {

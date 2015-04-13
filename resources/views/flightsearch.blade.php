@@ -32,6 +32,12 @@
       </div>
     </div>
     <div class="form-group">
+      <label for="inputEmail" class="col-lg-2 control-label">Connecting Flights</label>
+      <div class="col-lg-10" style="vertical-align: middle; line-height: 64px;">
+        <input type="checkbox"  name="connecting" value="true">
+      </div>
+    </div>
+    <div class="form-group">
       <div class="col-lg-10 col-lg-offset-2">
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>

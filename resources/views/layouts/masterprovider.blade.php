@@ -47,16 +47,20 @@
 
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
+        @if (Session::get('provider.type')=="Flight")
         <li 
         @if (!(strpos(Route::currentRouteName(),"flight.")===FALSE))
         class="active"
         @endif
         ><a href="{{ route('provider.flight.list') }}">Flights <span class="sr-only">(current)</span></a></li>
+        @endif
+        @if (Session::get('provider.type')=="Hotel")
         <li
         @if (!(strpos(Route::currentRouteName(),"hotel.")===FALSE))
         class="active"
         @endif
         ><a href="{{ route('provider.hotel.list') }}">Hotels</a></li>
+        @endif
       
       
       </ul>
