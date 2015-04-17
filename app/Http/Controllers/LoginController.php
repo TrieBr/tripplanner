@@ -59,7 +59,13 @@ class LoginController extends Controller {
 					Session::put('user.type',$row['UserType']);
 					Session::put('user.name',$username);
 					if ($row['UserType']=="Customer") {
-						return redirect()->route('index'); //view('login');
+						$query = "SELECT c.CustomerNum FROM customer AS c
+									WHERE c.UserId=".$row['UserNum'].";";
+						if ($result = mysqli_query($mysqli,$query)) {
+							$row = $result->fetch_array(); 
+							Session::put('customer.id', $row['CustomerNum']);
+							return redirect()->route('index'); //view('login');
+						}
 					}else if ($row['UserType']=="Provider") {
 						$query = "SELECT p.ProviderNum, p.ProvName, p.ProviderType FROM provider AS p
 									WHERE p.UserId=".$row['UserNum'].";";

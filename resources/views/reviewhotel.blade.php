@@ -14,7 +14,7 @@
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Rating</label>
                     <div class="col-lg-10">
-                      <input type="text" name="rating" class="form-control" id="inputEmail" placeholder="Rating (from 1 to 5)">
+                      <input type="number" min="1" max="5" name="rating" class="form-control" id="inputEmail" placeholder="Rating (from 1 to 5)">
                     </div>
     </div>
     <div class="form-group">

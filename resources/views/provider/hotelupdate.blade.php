@@ -14,7 +14,7 @@
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Address</label>
                     <div class="col-lg-10">
-                     <input type="text" class="form-control" id="inputEmail" placeholder="Address" name="address" value="{{$details['Address']}}">
+                     <input type="text" class="form-control" id="inputEmail" placeholder="Address" name="address" value="{{$details['Address']}}" readonly>
                     </div>
     </div>
     <div class="form-group">

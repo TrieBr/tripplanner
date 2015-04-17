@@ -70,7 +70,7 @@
 					$roomnum = mysqli_fetch_array($result);
 				}
 				$query = "INSERT INTO Reservation
-							VALUES ('{$checkindate}', ".$roomnum[0].", ".$price.", '{$checkoutdate}', '".mysqli_real_escape_string($mysqli,$hotelID)."', '".mysqli_real_escape_string($mysqli,Session::get('user.id'))."');";
+							VALUES ('{$checkindate}', ".$roomnum[0].", ".$price.", '{$checkoutdate}', '".mysqli_real_escape_string($mysqli,$hotelID)."', '".mysqli_real_escape_string($mysqli,Session::get('customer.id'))."');";
 				if ($result = mysqli_query($mysqli,$query)) {
 					if (mysqli_affected_rows($mysqli)==0) {
 						Session::flash('message','Error booking reservation.');
@@ -103,7 +103,7 @@
 								".$price.",
 								'".mysqli_real_escape_string($mysqli,$flightNumber)."',
 								(SELECT DepartTime FROM flight WHERE FlightNo = '".mysqli_real_escape_string($mysqli,$flightNumber)."'),
-								".Session::get('user.id').");";
+								".Session::get('customer.id').");";
 				if ($result = mysqli_query($mysqli,$query)) {
 					if (mysqli_affected_rows($mysqli)==0) {
 						Session::flash('message','Error booking ticket.');
