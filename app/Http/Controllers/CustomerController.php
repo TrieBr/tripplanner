@@ -64,16 +64,14 @@ class CustomerController extends Controller {
 				$query .= "GROUP BY flight.FlightNo
 				HAVING 	Count(t.SeatNum)<flight.Capacity";
 			if ($connecting=="true") {
-			$query = "SELECT  f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), ff.FlightNo, pp.ProvName, (ff.Capacity-count(tt.SeatNum)), f.Capacity, ff.Capacity
-						FROM    Flight AS f,Provider AS p,Ticket AS t, Flight AS ff, Provider AS pp, Ticket AS tt, ConnectsTo AS ct
+			$query = "SELECT  f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), ff.FlightNo AS FlightNo2, pp.ProvName AS ProvName2, (ff.Capacity-count(tt.SeatNum)) AS Remaining2, f.Capacity, ff.Capacity
+						FROM    Flight AS f LEFT OUTER JOIN Ticket AS t ON f.FlightNo=t.OnFlightNumber,Provider AS p, Flight AS ff LEFT OUTER JOIN Ticket AS tt ON ff.FlightNo=tt.OnFlightNumber, Provider AS pp, ConnectsTo AS ct
 						WHERE   f.ManagedBy = p.ProviderNum
 						AND     ff.ManagedBy = pp.ProviderNum
-						AND     t.OnFlightNumber = f.FlightNo
-						AND     tt.OnFlightNumber = ff.FlightNo
 						AND     ct.DepartingFlightNumber = f.FlightNo
 						AND     ct.ArrivingFlightNumber = ff.FlightNo
 						AND     f.DepartingFrom = '".$location1."'
-						AND     ff.ArrivingAt = '".$location1."'";
+						AND     ff.ArrivingAt = '".$location2."'";
 						if ($departDate!="")
 						$query .= " AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0 ";
 						$query .= "GROUP BY f.FlightNo
@@ -89,7 +87,11 @@ class CustomerController extends Controller {
 				Session::flash('message','Error executing search query: '.$query);
 			}
 		}
-		return view('flightsearchresults')->with('results', $all_results);
+		if ($connecting=="true") {
+			return view('flightsearchresultsconnecting')->with('results', $all_results);
+		}else{
+			return view('flightsearchresults')->with('results', $all_results);
+		}
 	}
 
 	/**
@@ -191,7 +193,10 @@ class CustomerController extends Controller {
 			$query = "SELECT  HotelName, Address, StartingPrice, h.Capacity
 						FROM    Hotel AS h LEFT OUTER JOIN Reservation AS r ON h.Address = r.forhotel
 						WHERE   BasedIn = '".$location."'
-						AND     (r.CheckInDate IS NULL OR (DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0     AND        DATEDIFF(DATE('".$checkindate."'), DATE(r.CheckOutDate))>=0))
+						AND     (r.CheckInDate IS NULL OR 
+							(DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0 AND DATEDIFF(DATE('".$checkindate."'),DATE(r.CheckOutDate))>=0)
+
+							)
 						GROUP BY h.Address
 						HAVING  count(*)-1 < h.Capacity;";
 
@@ -225,9 +230,20 @@ class CustomerController extends Controller {
 		$hotelID = $id;
 		$checkindate = Session::get('checkin');
 		$nights = Session::get('nights');
-		print($checkindate);
-		$price = rand(400,10000);
 		$checkoutdate = date("Y-m-d", strtotime("+".$nights."days", strtotime($checkindate)));
+		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+		$query =  "SELECT  h.StartingPrice, h.Capacity, ((Count(r.RoomNum)))
+						FROM    Hotel AS h LEFT OUTER JOIN Reservation AS r ON h.Address = r.forhotel
+						WHERE   h.Address = '".$id."'
+						AND     (r.CheckInDate IS NULL OR (DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0     AND        DATEDIFF(DATE(r.CheckOutDate),DATE('".$checkindate."'))>=0))";
+		if ($result = mysqli_query($mysqli,$query) ) {
+				$hotelprice = mysqli_fetch_array($result);
+			}
+			print($hotelprice[2]);
+		$price = (($hotelprice[2]/$hotelprice["Capacity"])+1) * $hotelprice['StartingPrice'];
+
+	
+		
 		if (!(($r = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate))===false)) {
 			return view('hotelbook')->with('checkindate', $checkindate)->with('price', $price)->with('roomno', $r)->with("nights", $nights);
 		}else{
@@ -380,7 +396,7 @@ class CustomerController extends Controller {
 			$query = "SELECT	f.FlightNo, f.ArrivingAt, f.DepartTime, t.SeatNum, t.Class, t.Price
 					FROM	Ticket AS t, Flight AS f
 					WHERE	t.OnFlightNumber = f.FlightNo
-					AND 	t.BookedBy = '".Session::get('user.id')."';"; 
+					AND 	t.BookedBy = '".Session::get('customer.id')."';"; 
 			if ($result = mysqli_query($mysqli,$query)) {
 				while ($r = mysqli_fetch_array($result)) {
 			    	$flightResults[] = $r;
@@ -391,7 +407,7 @@ class CustomerController extends Controller {
 			$query = "SELECT 	h.HotelName, h.BasedIn, r.CheckInDate, r.CheckInDate, r.CheckOutDate, h.Address
 				FROM 	Reservation AS r, Hotel AS h
 				WHERE 	r.ForHotel = h.Address
-				AND 	r.PlacedBy = '".Session::get('user.id')."';"; 
+				AND 	r.PlacedBy = '".Session::get('customer.id')."';"; 
 			if ($result = mysqli_query($mysqli,$query)) {
 				while ($r = mysqli_fetch_array($result)) {
 			    	$hotelresults[] = $r;
@@ -433,7 +449,7 @@ class CustomerController extends Controller {
 			Session::flash('message','Error connecting to database.');
 		}else{
 			$query = "INSERT INTO Review (Comments, Rating, LeftBy, HotelAddress, FlightNumber)
-						VALUES	('{$comments}', '{$rating}', '".Session::get('user.id')."', '".Session::get('hotelid')."', NULL);";
+						VALUES	('{$comments}', '{$rating}', '".Session::get('customer.id')."', '".Session::get('hotelid')."', NULL);";
 			if ($result = mysqli_query($mysqli,$query)) {
 				if (mysqli_affected_rows($mysqli)==0) {
 					Session::flash('message','Error booking ticket.');
@@ -476,7 +492,7 @@ class CustomerController extends Controller {
 			Session::flash('message','Error connecting to database.');
 		}else{
 			$query = "INSERT INTO Review (Comments, Rating, LeftBy, HotelAddress, FlightNumber)
-						VALUES	('{$comments}', '{$rating}', '".Session::get('user.id')."', NULL, '".Session::get('flightid')."');";
+						VALUES	('{$comments}', '{$rating}', '".Session::get('customer.id')."', NULL, '".Session::get('flightid')."');";
 			if ($result = mysqli_query($mysqli,$query)) {
 				if (mysqli_affected_rows($mysqli)==0) {
 					Session::flash('message','Error booking ticket.');
