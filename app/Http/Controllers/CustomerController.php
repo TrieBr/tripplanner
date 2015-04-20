@@ -101,24 +101,30 @@ class CustomerController extends Controller {
 	 */
 	public function flightbook($flightno)
 	{
-		$flightNumber = $flightno;	//Sanitize this?
-		$input = array('First','Business','Economy','Cargo','Pilot');
-		$cl = $input[rand(0,4)]; 
-		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
-		$query =  "SELECT flight.BaseTicketPrice, flight.Capacity,(Count(t.SeatNum))
-				FROM 	flight LEFT OUTER JOIN Ticket AS t ON t.OnFlightNumber = flight.FlightNo
-				WHERE	flight.FlightNo='".mysqli_real_escape_string($mysqli,$flightno)."';";
-		if ($result = mysqli_query($mysqli,$query) ) {
-				$flightprice = mysqli_fetch_array($result);
+		$flightNumbers = explode(",",$flightno);
+		$tickets = array();
+		foreach ($flightNumbers as $fNo) {		
+			$flightNumber = $fNo;	//Sanitize this?
+			$input = array('First','Business','Economy','Cargo','Pilot');
+			$cl = $input[rand(0,4)]; 
+			$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+			$query =  "SELECT flight.BaseTicketPrice, flight.Capacity,(Count(t.SeatNum))
+					FROM 	flight LEFT OUTER JOIN Ticket AS t ON t.OnFlightNumber = flight.FlightNo
+					WHERE	flight.FlightNo='".mysqli_real_escape_string($mysqli,$flightNumber)."';";
+			if ($result = mysqli_query($mysqli,$query) ) {
+					$flightprice = mysqli_fetch_array($result);
+				}
+
+			$price = (($flightprice[2]/$flightprice["Capacity"])+1) * $flightprice['BaseTicketPrice'];
+
+			if(!(($r = Queries::BookFlight($flightNumber,$cl, $price))===false)) {
+				$tickets[] = array('seatnum' => $r, 'class' => $cl, 'price' => $price, 'flightnum' => $fNo);
+				continue;
+			}else{
+				return redirect()->route('flight.search');
 			}
-
-		$price = (($flightprice[2]/$flightprice["Capacity"])+1) * $flightprice['BaseTicketPrice'];
-
-		if(!(($r = Queries::BookFlight($flightNumber,$cl, $price))===false)) {
-			return view('flightbook')->with('seatnum', $r)->with('class', $cl)->with('price',$price);
-		}else{
-			return redirect()->route('flight.search');
 		}
+		return view('flightbook')->with('tickets', $tickets);
 	}
 	/**
 	 * Shows details for a specific flight
