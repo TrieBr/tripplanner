@@ -72,7 +72,7 @@ class ProviderController extends Controller {
 						VALUES    ((SELECT  f.FlightNo
 			           FROM     Flight AS f, Flight AS ff
 			           WHERE    ff.FlightNo = '".$flightno."'
-			           AND      f.DepartingFrom = ff.ArrivingAt
+			           AND      ff.DepartingFrom = f.ArrivingAt
 			           AND      TIMESTAMPDIFF(hour, DATE(f.ArriveTime), DATE(ff.DepartTime)) BETWEEN 0 AND 4)
 			           , '".$flightno."'),
 			           

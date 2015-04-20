@@ -64,7 +64,7 @@ class CustomerController extends Controller {
 				$query .= "GROUP BY flight.FlightNo
 				HAVING 	Count(t.SeatNum)<flight.Capacity";
 			if ($connecting=="true") {
-			$query = "SELECT  f.FlightNo, p.ProvName, (f.Capacity-count(t.SeatNum)), ff.FlightNo AS FlightNo2, pp.ProvName AS ProvName2, (ff.Capacity-count(tt.SeatNum)) AS Remaining2, f.Capacity, ff.Capacity
+			$query = "SELECT  f.FlightNo, p.ProvName, (f.Capacity-count(DISTINCT t.SeatNum)), ff.FlightNo AS FlightNo2, pp.ProvName AS ProvName2, (ff.Capacity-count(DISTINCT tt.SeatNum)) AS Remaining2, f.Capacity, ff.Capacity
 						FROM    Flight AS f LEFT OUTER JOIN Ticket AS t ON f.FlightNo=t.OnFlightNumber,Provider AS p, Flight AS ff LEFT OUTER JOIN Ticket AS tt ON ff.FlightNo=tt.OnFlightNumber, Provider AS pp, ConnectsTo AS ct
 						WHERE   f.ManagedBy = p.ProviderNum
 						AND     ff.ManagedBy = pp.ProviderNum
@@ -75,8 +75,8 @@ class CustomerController extends Controller {
 						if ($departDate!="")
 						$query .= " AND 	DATEDIFF(DATE(f.DepartTime), '".$departDate."')=0 ";
 						$query .= "GROUP BY f.FlightNo
-						HAVING  count(t.SeatNum)-1<f.Capacity
-						AND     count(tt.SeatNum)-1<ff.Capacity;";
+						HAVING  count(DISTINCT t.SeatNum)<f.Capacity
+						AND     count(DISTINCT tt.SeatNum)<ff.Capacity;";
 			}
 
 			if ($result = mysqli_query($mysqli,$query)) {
