@@ -241,7 +241,7 @@ class CustomerController extends Controller {
 		$query =  "SELECT  h.StartingPrice, h.Capacity, ((Count(r.RoomNum)))
 						FROM    Hotel AS h LEFT OUTER JOIN Reservation AS r ON h.Address = r.forhotel
 						WHERE   h.Address = '".$id."'
-						AND     (r.CheckInDate IS NULL OR (DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0     AND        DATEDIFF(DATE(r.CheckOutDate),DATE('".$checkindate."'))>=0))";
+						AND     (r.CheckInDate IS NULL OR (DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0     AND        DATEDIFF(DATE('".$checkindate."'), DATE(r.CheckOutDate))>=0))";
 		if ($result = mysqli_query($mysqli,$query) ) {
 				$hotelprice = mysqli_fetch_array($result);
 			}

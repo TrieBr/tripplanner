@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="form-group">
-      <label class="col-lg-2 ">Price</label>
+      <label class="col-lg-2 ">Price Per Night</label>
       <div class="col-lg-10">
         ${{number_format($price,2)}}
       </div>

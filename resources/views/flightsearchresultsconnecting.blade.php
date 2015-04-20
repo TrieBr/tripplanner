@@ -30,7 +30,7 @@
       <td>{{$result['ProvName2']}}</td>
       <td>{{$result['Remaining2']}}</td>
       <td style="text-align: center;"><span style="color: #ADADAD">(Connecting Flight)</span></td>
-      <td style="text-align: center;"><a href="{{ route('flight.details', $result['FlightNo']) }}"><button class="btn btn-info btn-xs" type="button">Details</button></a></td>
+      <td style="text-align: center;"><a href="{{ route('flight.details', $result['FlightNo2']) }}"><button class="btn btn-info btn-xs" type="button">Details</button></a></td>
     </tr>
   <?php } ?>
   
