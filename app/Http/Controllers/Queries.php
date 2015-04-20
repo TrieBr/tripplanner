@@ -69,6 +69,13 @@
 				if ($result = mysqli_query($mysqli,"(SELECT Count(*) FROM Reservation WHERE ForHotel = '".mysqli_real_escape_string($mysqli,$hotelID)."')") ) {
 					$roomnum = mysqli_fetch_array($result);
 				}
+				if ($result = mysqli_query($mysqli,"SELECT  h.Capacity, ((Count(r.RoomNum)))
+							FROM    Hotel AS h LEFT OUTER JOIN Reservation AS r ON h.Address = r.forhotel
+							WHERE   h.Address = '".$hotelID."'
+							AND     (r.CheckInDate IS NULL OR (DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0     AND        DATEDIFF(DATE(r.CheckOutDate),DATE('".$checkindate."'))>=0))") ) {
+					$hotelcapacity = mysqli_fetch_array($result);
+				}
+				if ($hotelcapacity[1]>=$hotelcapacity["Capacity"]) return false;
 				$query = "INSERT INTO Reservation
 							VALUES ('{$checkindate}', ".$roomnum[0].", ".$price.", '{$checkoutdate}', '".mysqli_real_escape_string($mysqli,$hotelID)."', '".mysqli_real_escape_string($mysqli,Session::get('customer.id'))."');";
 				if ($result = mysqli_query($mysqli,$query)) {
