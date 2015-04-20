@@ -46,16 +46,19 @@ class ProviderController extends Controller {
 		$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
 		$flightno = mysqli_real_escape_string($mysqli,Input::get('flightno'));
 		$departdate = mysqli_real_escape_string($mysqli,Input::get('departdate'));
+		$departtime = mysqli_real_escape_string($mysqli,Input::get('departtime'));
+		$arrivedate = mysqli_real_escape_string($mysqli,Input::get('arrivedate'));
+		$arrivetime = mysqli_real_escape_string($mysqli,Input::get('arrivetime'));
 		$capacity = mysqli_real_escape_string($mysqli,Input::get('flightcapacity'));
 		$departlocation = mysqli_real_escape_string($mysqli,Input::get('departlocation'));
 		$arrivelocation = mysqli_real_escape_string($mysqli,Input::get('arrivelocation'));
-		
+		$flightprice = mysqli_real_escape_string($mysqli,Input::get('flightprice'));
 		if (!$mysqli)
 		{
 			Session::flash('message','Error connecting to database.');
 		}else{
-			$query = "INSERT INTO     flight(FlightNo, DepartTime, DepartingFrom, ArrivingAt, ManagedBy, Capacity)
-					VALUES          ('".$flightno."', '".$departdate."', '".$departlocation."', '".$arrivelocation."', ".Session::get('provider.id').", ".$capacity.");";
+			$query = "INSERT INTO     flight(FlightNo, DepartTime, ArriveTime, DepartingFrom, ArrivingAt, ManagedBy, Capacity, BaseTicketPrice)
+					VALUES          ('".$flightno."', '".$departdate.' '.$departtime."', '".$arrivedate.' '.$arrivetime."', '".$departlocation."', '".$arrivelocation."', ".Session::get('provider.id').", ".$capacity.", ".$flightprice.");";
 			if ($result = mysqli_query($mysqli,$query)) {
 				if (mysqli_affected_rows($mysqli)==0) {
 					Session::flash('message','Error Adding Flight!');
@@ -64,6 +67,29 @@ class ProviderController extends Controller {
 				Session::flash('message','Error executing query.');
 			}
 		}
+
+		$query = "	INSERT INTO ConnectsTo
+						VALUES    ((SELECT  f.FlightNo
+			           FROM     Flight AS f, Flight AS ff
+			           WHERE    ff.FlightNo = '".$flightno."'
+			           AND      f.DepartingFrom = ff.ArrivingAt
+			           AND      TIMESTAMPDIFF(hour, DATE(f.ArriveTime), DATE(ff.DepartTime)) BETWEEN 0 AND 4)
+			           , '".$flightno."'),
+			           
+			           ('".$flightno."', (SELECT    ff.FlightNo
+			                          FROM      Flight AS f, Flight AS ff
+			                          WHERE     f.FlightNo = '".$flightno."'
+			                          AND       f.ArrivingAt= ff.DepartingFrom
+			                          AND       TIMESTAMPDIFF(hour, DATE(f.ArriveTime), DATE(ff.DepartTime)) BETWEEN 0 AND 4));";
+			if ($result = mysqli_query($mysqli,$query)) {
+				if (mysqli_affected_rows($mysqli)==0) {
+					Session::flash('message','Error Adding Connection!');
+				}
+			}else{
+				Session::flash('message','Error executing Connection query.'.$query);
+			}
+
+
 		return view('provider.updateaddpost');
 	}
 
