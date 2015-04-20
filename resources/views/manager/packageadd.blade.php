@@ -14,7 +14,7 @@
     <div class="form-group">
                     <label for="select" class="col-lg-2 control-label">Discount</label>
                     <div class="col-lg-10">
-                     <input type="text" class="form-control" id="inputEmail" placeholder="% Discount" name="discount">
+                     <input type="number" class="form-control" id="inputEmail" placeholder="% Discount" name="discount" min="1" max="100">
                     </div>
     </div>
     <div class="form-group">

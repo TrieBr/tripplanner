@@ -245,7 +245,6 @@ class CustomerController extends Controller {
 		if ($result = mysqli_query($mysqli,$query) ) {
 				$hotelprice = mysqli_fetch_array($result);
 			}
-			print($hotelprice[2]);
 		$price = (($hotelprice[2]/$hotelprice["Capacity"])+1) * $hotelprice['StartingPrice'];
 
 	
@@ -340,10 +339,19 @@ class CustomerController extends Controller {
 			if ($result = mysqli_query($mysqli,"SELECT StayingAt, FlyingBy, DateOffered, Discount FROM package WHERE PackName = '".mysqli_real_escape_string($mysqli,$id)."'") ) {
 				$packagedetails = mysqli_fetch_array($result);
 			}
+
 			$hotelID = $packagedetails['StayingAt'];
 			$checkindate = $packagedetails['DateOffered'];
 			$nights = 5;
-			$price = rand(400,10000)*$packagedetails['Discount'];
+			$mysqli = mysqli_connect(Config::get('database.host'),Config::get('database.username'),Config::get('database.password'),Config::get('database.database'));
+			$query =  "SELECT  h.StartingPrice, h.Capacity, ((Count(r.RoomNum)))
+							FROM    Hotel AS h LEFT OUTER JOIN Reservation AS r ON h.Address = r.forhotel
+							WHERE   h.Address = '".$hotelID."'
+							AND     (r.CheckInDate IS NULL OR (DATEDIFF(DATE(r.CheckInDate), DATE('".$checkindate."'))<=0     AND        DATEDIFF(DATE('".$checkindate."'), DATE(r.CheckOutDate))>=0))";
+			if ($result = mysqli_query($mysqli,$query) ) {
+					$hotelprice = mysqli_fetch_array($result);
+				}
+			$price = ((($hotelprice[2]/$hotelprice["Capacity"])+1) * $hotelprice['StartingPrice'])*(1-$packagedetails['Discount']);
 			$checkoutdate = date("Y-m-d", strtotime("+".$nights."days", strtotime($checkindate)));
 			if (!(($h = Queries::BookHotel($hotelID, $checkindate, $nights, $price, $checkoutdate))===false)) {
 				$flightNumber = $packagedetails['FlyingBy'];	//Sanitize this?
@@ -356,7 +364,7 @@ class CustomerController extends Controller {
 				if ($result = mysqli_query($mysqli,$query) ) {
 						$flightprice = mysqli_fetch_array($result);
 					}
-				$flightprice = (($flightprice[2]/$flightprice["Capacity"])+1) * $flightprice['BaseTicketPrice'];
+				$flightprice = ((($flightprice[2]/$flightprice["Capacity"])+1) * $flightprice['BaseTicketPrice'])*(1-$packagedetails['Discount']);
 					if(!(($f = Queries::BookFlight($flightNumber,$cl, $flightprice))===false)) {
 						return view('packagebook')->with('bookinfo',
 								array('hotelCheckIn' => $checkindate,
