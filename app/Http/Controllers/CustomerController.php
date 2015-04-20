@@ -68,8 +68,8 @@ class CustomerController extends Controller {
 						FROM    Flight AS f LEFT OUTER JOIN Ticket AS t ON f.FlightNo=t.OnFlightNumber,Provider AS p, Flight AS ff LEFT OUTER JOIN Ticket AS tt ON ff.FlightNo=tt.OnFlightNumber, Provider AS pp, ConnectsTo AS ct
 						WHERE   f.ManagedBy = p.ProviderNum
 						AND     ff.ManagedBy = pp.ProviderNum
-						AND     ct.DepartingFlightNumber = f.FlightNo
-						AND     ct.ArrivingFlightNumber = ff.FlightNo
+						AND     ct.DepartingFlightNumber = ff.FlightNo
+						AND     ct.ArrivingFlightNumber = f.FlightNo
 						AND     f.DepartingFrom = '".$location1."'
 						AND     ff.ArrivingAt = '".$location2."'";
 						if ($departDate!="")
